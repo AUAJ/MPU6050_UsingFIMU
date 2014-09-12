@@ -1,1 +1,3 @@
 branch within branch. finally?
+
+damn right.  finally worked and I successfully merged the two!
