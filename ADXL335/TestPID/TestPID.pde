@@ -1,4 +1,4 @@
-  /*
+/*
   Serial Graphing Sketch
  by Tom Igoe
  Language: Processing
@@ -15,8 +15,8 @@
  August 26, 2014
  Updated by David Stillman @ Sparkfun (https://github.com/stilldavid/balance-robot)
  
- September 12, 2014
- Updated by AJ Weiner for self-balancing robot debugging 
+ September 15, 2014
+ Updated by AJ Weiner to plot PID parameters
  */
 
 import processing.serial.*;
@@ -35,10 +35,10 @@ String[] names = {
   "kp", "ki", "kd", "angle", "Speed"
 };
 int[] mins = {
-  0, 0, 0, -90, -255
+  0, 0, 0, -25, -255
 };
 int[] maxs = {
-  50, 5, 50, 90, 255
+  300, 300, 300, 25, 255
 };
 
 void setup () {
@@ -89,7 +89,8 @@ void serialEvent (Serial myPort) {
       return;
     }
 
-
+    int plot_var = 0;  // max sensors minus number of variables to plot
+                        // ie max 5 and plot 2 --> 5 - 2 = 3;
     // print out the values
     print("length: " + incomingValues.length + " values.\t");
     if (incomingValues.length <= maxNumberOfSensors && incomingValues.length > 0) {
@@ -104,14 +105,14 @@ void serialEvent (Serial myPort) {
       text(names[3] + ": " + String.valueOf(incomingValues[3]), 500, 50);
       text(names[4] + ": " + String.valueOf(incomingValues[4]), 600, 50);
       
-      for (int i = 3; i < incomingValues.length; i++) {
+      for (int i = plot_var; i < incomingValues.length; i++) {
 
         // map the incoming values to an appropriate
         // graphing range (0 to window height/number of values):
-        float ypos = map(incomingValues[i], mins[i], maxs[i], 0, height/(incomingValues.length-2));
+        float ypos = map(incomingValues[i], mins[i], maxs[i], 0, height/(incomingValues.length-(plot_var-1)));
 
         // figure out the y position for this particular graph:
-        float graphBottom = (i-2) * height/(incomingValues.length-2);
+        float graphBottom = (i-(plot_var-1)) * height/(incomingValues.length-(plot_var-1));
         ypos = ypos + graphBottom;
 
         // make a black block to erase the previous text:

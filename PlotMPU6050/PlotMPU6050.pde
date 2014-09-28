@@ -16,14 +16,15 @@
  Updated by David Stillman @ Sparkfun (https://github.com/stilldavid/balance-robot)
  
  September 12, 2014
- Updated by AJ Weiner for self-balancing robot debugging 
+ Updated by AJ Weiner for MPU6050
  */
 
 import processing.serial.*;
 
-int maxNumberOfSensors = 5;       // 5 sensor values of interest
+int maxNumberOfSensors = 6;       // 5 sensor values of interest
 boolean fontInitialized = false;  // whether the font's been initialized
-Serial myPort;                    // The serial port
+Serial myPort;   // The serial port
+int valuesToPlot = 1; // = maxNumberOfSensors - "# you want want to plot"
 
 float[] previousValue = new float[maxNumberOfSensors];  // array of previous values
 int xpos = 0;                     // x position of the graph
@@ -32,13 +33,13 @@ PFont myFont;                     // font for writing text to the window
 char go = 'S';
 
 String[] names = {
-  "kp", "ki", "kd", "angle", "Speed"
+  "GyroX", "GyroY", "GyroZ", "AccX", "AccY", "AccZ"
 };
 int[] mins = {
-  0, 0, 0, -90, -255
+  -32768, -32768, -32768, -16384, -16384, -16384
 };
 int[] maxs = {
-  50, 5, 50, 90, 255
+  32768, 32768, 32768, 16384, 16384, 16384
 };
 
 void setup () {
@@ -46,7 +47,7 @@ void setup () {
   //println(Serial.list());
   String portName = Serial.list()[2];
   print(portName);
-  myPort = new Serial(this, portName, 9600);
+  myPort = new Serial(this, portName, 38400);
   myPort.clear();
   // don't generate a serialEvent() until you get a newline (\n) byte:
   myPort.bufferUntil('\n');
@@ -96,7 +97,7 @@ void serialEvent (Serial myPort) {
       
       noStroke();
       fill(50);
-      rect(380, 0, 300, 60);
+      rect(380, 0, 400, 60);
       fill(255);
       text(names[0] + ": " + String.valueOf(incomingValues[0]), 400, 20);
       text(names[1] + ": " + String.valueOf(incomingValues[1]), 500, 20);
@@ -104,14 +105,14 @@ void serialEvent (Serial myPort) {
       text(names[3] + ": " + String.valueOf(incomingValues[3]), 500, 50);
       text(names[4] + ": " + String.valueOf(incomingValues[4]), 600, 50);
       
-      for (int i = 3; i < incomingValues.length; i++) {
+      for (int i = valuesToPlot; i < incomingValues.length; i++) {
 
         // map the incoming values to an appropriate
         // graphing range (0 to window height/number of values):
-        float ypos = map(incomingValues[i], mins[i], maxs[i], 0, height/(incomingValues.length-2));
+        float ypos = map(incomingValues[i], mins[i], maxs[i], 0, height/(incomingValues.length-(valuesToPlot-1)));
 
         // figure out the y position for this particular graph:
-        float graphBottom = (i-2) * height/(incomingValues.length-2);
+        float graphBottom = (i-(valuesToPlot-1)) * height/(incomingValues.length-(valuesToPlot-1));
         ypos = ypos + graphBottom;
 
         // make a black block to erase the previous text:

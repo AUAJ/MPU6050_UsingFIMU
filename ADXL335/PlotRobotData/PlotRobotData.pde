@@ -1,4 +1,4 @@
-  /*
+/*
   Serial Graphing Sketch
  by Tom Igoe
  Language: Processing
